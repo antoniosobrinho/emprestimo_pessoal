@@ -1,6 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from apps.personal_loan.models import LoanProposal
 from apps.personal_loan.choices import LoanStatusChoices
+from apps.personal_loan.tasks import rating_loan
 
 class LoanProposalSerializer(ModelSerializer):
 
@@ -13,7 +14,12 @@ class LoanProposalSerializer(ModelSerializer):
     def create(self, validated_data):
 
         validated_data['status'] = LoanStatusChoices.PENDING.value
-        return super().create(validated_data)
+
+        instance = super().create(validated_data)
+
+        rating_loan.delay(str(instance.id))
+
+        return instance
 
 
     
