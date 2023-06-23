@@ -1,6 +1,20 @@
 version: '3.4'
 
 services:
+  rabbitmq:
+    image: rabbitmq:3.12.0-management
+    container_name: 'rabbitmq'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    restart: always
+  celery:
+    build:
+      context: .
+    command: celery -A loan  worker --loglevel=info
+    depends_on:
+      - rabbitmq
+    restart: always
   emprestimopessoal:
     image: emprestimopessoal
     build:
@@ -10,3 +24,7 @@ services:
     ports:
       - 8000:8000
       - 5678:5678
+    depends_on:
+      - rabbitmq
+      - celery
+  
